@@ -1,0 +1,10 @@
+#PDFS
+*.pdf
+
+#Vim
+*.swp
+
+#latex
+*.log
+*.blg
+*.aux
