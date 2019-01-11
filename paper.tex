@@ -1,12 +1,15 @@
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage[utf8]{inputenc}
+
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{cleveref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -47,24 +50,6 @@ email address}
 \textit{name of organization (of Aff.)}\\
 City, Country \\
 email address}
-\and
-\IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
-\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-\textit{name of organization (of Aff.)}\\
-City, Country \\
-email address}
-\and
-\IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
-\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-\textit{name of organization (of Aff.)}\\
-City, Country \\
-email address}
-\and
-\IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
-\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-\textit{name of organization (of Aff.)}\\
-City, Country \\
-email address}
 }
 
 \maketitle
@@ -81,16 +66,78 @@ component, formatting, style, styling, insert
 \section{Introduction}\label{sec:introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+%%% Notes %%%%
+
 O que falar?
 \begin{itemize}
     \item Para que pode servir esta calibração?
-    \item Onde é usada -> reconstrução de cenas, por exemplo; ou outros cenários onde a posição do laser é necessária de conhecer com elevada precisão.
+    \item Onde é usada? reconstrução de cenas, por exemplo; ou outros cenários onde a posição do laser é necessária de conhecer com elevada precisão.
     \item 
 \end{itemize}
+
+Problem formulation
+
+What is a LRF (is 2D) -> produces 2D laser scans.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%TODO: Colocar reconstrucion para dar a motivação para o problema
+
+% 
+% Definition of the laser scanners and how the point clouds are generated.
+%
+Each laser scan is a set of range measurements taken along several directions but at the same time, all coincident with a plane, the scan plane. That is in fact why these equipments have  a 2D nature. Thus, for each scan, a 2D slice of the scene is measured.(The accumulation of these 2D slices produces the accumulated point cloud.) Since the LRF is mounted on top of an actuated kinematic chain (e.g. a PTU or robotic manipulator), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. 
+
+
+% Explicação detalhada da acumulação e porque é impoortante a transformação do laser
+The process of accumulation, in essence, is based on the concatenation of 3D points from multiple scans. However, the grouping of these points requires that the points of each laser scan are transformed to a common, static, reference frame, the map frame. In order to achieve this, one must apply a geometric transformation to each 3D point $\bold{p}^{(i)}$ measured in scan $i$, represented in the LRF's local coordinate system $l$. The transformed point $\bold{q}^{(i)}$, defined in the map reference frame, is determined by:
+%
+\begin{equation}
+    \bold{q}^{(i)} = \, ^{m}\bold{T}_{e}^{(i)} \cdot ^{e}\bold{T}_{l} \cdot \bold{p}^{(i)},
+\end{equation}
+%
+\noindent where ${^{m}\bold{T}_{e}}^{(i)}$ is the transformation between the map and the end effector coordinate frames, which is dynamic and given by the process that receives a description of the kinematic chain, the joint values at the scan $i$, and computes the direct kinematics. In turn, $^{e}\bold{T}_{l}$ denotes the position of the LRF w.r.t the end effector. 
+
+Note that, although this transformation is static, it influences the coordinates of the points $\bold{q}^{(i)}$, and therefore is crucial to the accuracy with which three dimensional objects are represented in the accumulated point cloud.
+Thus, an accurate estimation of transformation $^{e}\bold{T}_{l}$ is paramount to process of 3D reconstruction. We refer to this procedure of estimation the LRF to end effector transformation, as the Lidar to end-effector extrinsic calibration. 
+To best of our knowledge, there is no straight forward, off-the-shelf methods for 
+conducting this calibration, as will be detailed in \cref{sec:related_work}.
+
+%TODO: Colocar aqui uma figura ilustrativa do problema
+
+In this work, we propose a novel approach to perform Lidar to end-effector extrinsic calibration. The approach is based on an optimization procedure which computes the transformation that generates planar point cloud sections in areas which are marked as planes. To this end, several existing scene structures may be used, such as walls, ceilings or pavements. This is an additional advantage of our proposed method: it does not require dedicated calibration targets.
+
+uses as objective function a measure of how similar to a plane portions of the point cloud are. These portions are segmente from the original point cloud using a manual one shot procedure. 
+
+% By extrinsic calibration, we refer to the procedure which estimates the 6 DOF geometric transformation between the reference frame of the LRF and the reference frame of the end point of the kinematic, often referred to as the end-effector in robotic manipulators.
+% This accumulation process is the core of all 3D reconstruction systems that use LRFs. However this reconstruction is highly affected the estimation of the position of the LRF to the mounting point in the kinematic chain. 
+% IKn this case, there are no straight forwardof the shelf methods for conducting the extrinsic calibration of the LRF. By extrinsic calibration, we refer to the procedure which estimates the 6dof geometric transformation between the reference frame of the LRF and the reference frame of the end point of the kinematic, often refeered to as the end-effector in robotic manipulators. 
+% a plane (What is a LS?) Each LS is registered to a static frame of reference, often called the base link, as in the following equation:
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}\label{sec:related_work}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Ver aqui: https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=laser%20range%20finder%20calibration&highlight=true&returnFacets=ALL&returnType=SEARCH&ranges=2010_2018_Year
+
+Clustering of papers:
+
+There are some papers which use planar structures. In 
+In \cite{Kim2013}, a method for the extrinsic calibration is proposed that uses the normal verctor of two reference planes as metric for estimating the transformation. In blab
+
+% Optimizações / Grid search / analytica
+
+
+
+
+
+%In this paper, we present an algorithm for the extrinsic calibration method of rotating laser range finder (LRF). LRF is rotated about one axis using a motor therefore it is required to find the transformation between the motor and LRF to register scanned datum into one coordinate. We use calibration structure consisted of two planes to recover the transformation. Initial value of the transformation is set by hand and exhaustive search on the solution space is done. The fitness of the solution is evaluated using normal vector of the plane on the scene.
+
 
 Pontos essenciais:
 \begin{itemize}
@@ -103,6 +150,7 @@ Pontos essenciais:
 \section{Proposed Approach}\label{sec:proposed_approach}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%The approach is based on an optimization procedure which computes the transformation that minimizes the distance between selected points of the accumulated point cloud and their corresponding planes.
 A alternative method, the Planar Based Calibration, was developed in this work to calibrate the laser scanner in this system. One of the key differences to the previous method (in \cref{section:radlocc-method}) is that the calibration is done only using the laser range data, and the calibration from the PTU to the laser scanner is directly found (the transformation marked in blue in \cref{figure:geometric-transformation-graph}), so no camera is required. This method supposes that, in a good calibration, the deviation of a point set is minimal. In other words, in a point set representing a planar surface, the deviation from the points to the planar surface should be the lowest, if the extrinsic calibration is correct.
 
 This method is, therefore, an optimization problem. For each extrinsic calibration transformation $\mathcal{T}$, corresponds a point cloud $\mathcal{P}$, following the method shown on \cref{section:point-registration}. This point cloud is evaluated by a cost function, which determines quantitatively how good each generated point cloud is. Finally, an optimizer will find the transformation $T$ that minimizes the loss function. Each one of these steps is described in detail next.
