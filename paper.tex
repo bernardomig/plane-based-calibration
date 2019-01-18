@@ -10,28 +10,17 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{cleveref}
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage[draft]{todonotes}
+\usepackage{bm}
+
+% \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+%    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
 \begin{document}
 
-\title{  %Calibrations of Lidars on PTU devices\\
-  %Calibration of Lidars on Kinematic chain(or Robotic Arm)\\
-  %calibration marker free \dots blablabla
-  %Plane based calibration for Lidars on Kinematic chain (or Robotic Arm)\\
-  %blablbablab \dots for 3D reconstruction\\
-  %Calibration of Lidar on Robotic Arm for 3D Reconstruction\\
-  %Lidar Calibration for 3D Reconstruction\\
-  %Calibration method for Lidars mounted on Robotic Arms\\
-  %Using Planar based features for \dots\\
-%A Lidar-hand calibration method using planar based features\\
-  %Calibration of a Lidar based eye-in-hand system.\\
-  %A planar based optmization for lidar based eye-in-hand calibration problem\\
-  Lidar to end-effector calibration approach\\ using planar based features
-  *\\
-{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
-should not be used}
-\thanks{Identify applicable funding agency here. If none, delete this.}
-}
+\title{Lidar to end-effector calibration approach\\ using planar based features}
 
 \author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
 \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
@@ -62,100 +51,114 @@ email address}
 component, formatting, style, styling, insert
 \end{IEEEkeywords}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}\label{sec:introduction}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}\label{section:introduction}
 
+The Laser Range Finder, or LRF, is one of the most important sensor in the field of robotics, employed in application such as SLAM and 3D reconstruction. Its use is increasing due to their continuously decrease in price, new research and development and its fundamental role in emerging technologies such as autonomous driving.
 
-%%% Notes %%%%
+% TODO: add references
+% TODO: 
+In this paper, a 2D LRF is used in a 3D reconstruction system, to produce high-detail and accurate models of real scenes. The common solution involves the integration of the LRF on a robotic arm, such as a PTU, to enable a full 3D reconstruction. However, one of the challenges of this approach is the calibration of the position of the LRF, relative to the coordinate frame of the robotic arm. This process is known as the LRF extrinsic calibration.
 
-O que falar?
-\begin{itemize}
-    \item Para que pode servir esta calibração?
-    \item Onde é usada? reconstrução de cenas, por exemplo; ou outros cenários onde a posição do laser é necessária de conhecer com elevada precisão.
-    \item 
-\end{itemize}
+% TODO: add measuring instruments, explain further, add examples
+Typically, the standard procedure to do this calibration relies on a study of the geometry of such system, using a measuring instrument. However, this approach has several disadvantages: it is time-consuming, the instruments required are expensive and generally not easily available. Therefore, this solution is often not feasible for research work and prototype development.
 
-Problem formulation
+Therefore, reliable and automatic methods for the LRF extrinsic calibration are required. Most of these methods rely on the comparison between the structure of the reconstructed points with a known geometry, e.g. a marker. In \cite{Kim2013}, a marker formed by two perpendicular planes is used, and their points are segmented from the reconstructed point cloud. Then, the relation between normals of these planes are used as the objective function for the calibration. However, this method presents some limitations: first, ensuring that two planes are perpendicular with a small error can be very hard (carboard ); second, it is not straight-forward how to increase the number of planes; finally, by using a small marker, only a small portion of the space is occupied, which means that only a portion of the sensors' full field of view is used, which may lead to a sub-optimal result.
 
-What is a LRF (is 2D) -> produces 2D laser scans.
+{\color{red}
+Completar com mais estado da arte}
 
+In this paper, a new method for the extrinsic calibration of a LRF w.r.t. a robotic arm is presented, which makes used of the reconstructed scene geometry, more specifically, its planar regions. Then, the evaluation of this regions serves as the objective function for an optimization procedure, which searches the position of the LRF which minimizes the deformations of the reconstructed geometry. Results will show that the proposed approach is capable of generating accurate reconstructed scenes.
 
+% TODO
+The remainder of this paper will be structured as follows...
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Problem Formulation}\label{section:problem-formulation}
 
-%TODO: Colocar reconstrucion para dar a motivação para o problema
+The LRF is a sensor that outputs several laser scans. Each laser scan is a set of range measurements taken along several directions but at the same time, all coincident with a plane, the scan plane. That is in fact why these equipments have  a 2D nature. Thus, for each scan, a 2D slice of the scene is measured. Since the LRF is mounted on top of an actuated kinematic chain (e.g. a PTU or robotic manipulator), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. 
 
-% 
-% Definition of the laser scanners and how the point clouds are generated.
-%
-Each laser scan is a set of range measurements taken along several directions but at the same time, all coincident with a plane, the scan plane. That is in fact why these equipments have  a 2D nature. Thus, for each scan, a 2D slice of the scene is measured.(The accumulation of these 2D slices produces the accumulated point cloud.) Since the LRF is mounted on top of an actuated kinematic chain (e.g. a PTU or robotic manipulator), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. 
-
-
-% Explicação detalhada da acumulação e porque é impoortante a transformação do laser
-The process of accumulation, in essence, is based on the concatenation of 3D points from multiple scans. However, the grouping of these points requires that the points of each laser scan are transformed to a common, static, reference frame, the map frame. In order to achieve this, one must apply a geometric transformation to each 3D point $\bold{p}^{(i)}$ measured in scan $i$, represented in the LRF's local coordinate system $l$. The transformed point $\bold{q}^{(i)}$, defined in the map reference frame, is determined by:
+The process of accumulation is, in essence, based on the concatenation of 3D points from multiple scans. However, the grouping of these points requires that the points of each laser scan are transformed to a common, static, reference frame, the map frame. In order to achieve this, one must apply a geometric transformation to each 3D point $\mathbf{p}^{(i)}$ measured in scan $i$, represented in the LRF's local coordinate system $l$. The transformed point $\mathbf{q}^{(i)}$, defined in the map reference frame, is determined by:
 %
 \begin{equation}
-    \bold{q}^{(i)} = \, ^{m}\bold{T}_{e}^{(i)} \cdot ^{e}\bold{T}_{l} \cdot \bold{p}^{(i)},
+    \mathbf{q}^{(i)} = \, ^{m}\mathbf{T}_{e}^{(i)} \cdot ^{e}\mathbf{T}_{l} \cdot \mathbf{p}^{(i)},
 \end{equation}
 %
-\noindent where ${^{m}\bold{T}_{e}}^{(i)}$ is the transformation between the map and the end effector coordinate frames, which is dynamic and given by the process that receives a description of the kinematic chain, the joint values at the scan $i$, and computes the direct kinematics. In turn, $^{e}\bold{T}_{l}$ denotes the position of the LRF w.r.t the end effector. 
+\noindent where ${^{m}\mathbf{T}_{e}}^{(i)}$ is the transformation between the map and the end effector coordinate frames, which is dynamic and given by the process that receives a description of the kinematic chain, the joint values at the scan $i$, and computes the direct kinematics. In turn, $^{e}\mathbf{T}_{l}$ denotes the position of the LRF w.r.t the end effector. 
 
-Note that, although this transformation is static, it influences the coordinates of the points $\bold{q}^{(i)}$, and therefore is crucial to the accuracy with which three dimensional objects are represented in the accumulated point cloud.
-Thus, an accurate estimation of transformation $^{e}\bold{T}_{l}$ is paramount to process of 3D reconstruction. We refer to this procedure of estimation the LRF to end effector transformation, as the Lidar to end-effector extrinsic calibration. 
+Note that, although this transformation is static, it influences the coordinates of the points $\mathbf{q}^{(i)}$, and therefore is crucial to the accuracy with which three dimensional objects are represented in the accumulated point cloud.
+Thus, an accurate estimation of transformation $^{e}\mathbf{T}_{l}$ is paramount to process of 3D reconstruction. We refer to this procedure of estimation the LRF to end effector transformation, as the Lidar to end-effector extrinsic calibration. 
 To best of our knowledge, there is no straight forward, off-the-shelf methods for 
-conducting this calibration, as will be detailed in \cref{sec:related_work}.
+conducting this calibration, as will be detailed in \cref{sec:related-work}.
 
 %TODO: Colocar aqui uma figura ilustrativa do problema
 
 In this work, we propose a novel approach to perform Lidar to end-effector extrinsic calibration. The approach is based on an optimization procedure which computes the transformation that generates planar point cloud sections in areas which are marked as planes. To this end, several existing scene structures may be used, such as walls, ceilings or pavements. This is an additional advantage of our proposed method: it does not require dedicated calibration targets.
 
-uses as objective function a measure of how similar to a plane portions of the point cloud are. These portions are segmente from the original point cloud using a manual one shot procedure. 
-
-% By extrinsic calibration, we refer to the procedure which estimates the 6 DOF geometric transformation between the reference frame of the LRF and the reference frame of the end point of the kinematic, often referred to as the end-effector in robotic manipulators.
-% This accumulation process is the core of all 3D reconstruction systems that use LRFs. However this reconstruction is highly affected the estimation of the position of the LRF to the mounting point in the kinematic chain. 
-% IKn this case, there are no straight forwardof the shelf methods for conducting the extrinsic calibration of the LRF. By extrinsic calibration, we refer to the procedure which estimates the 6dof geometric transformation between the reference frame of the LRF and the reference frame of the end point of the kinematic, often refeered to as the end-effector in robotic manipulators. 
-% a plane (What is a LS?) Each LS is registered to a static frame of reference, often called the base link, as in the following equation:
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Related Work}\label{sec:related_work}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Ver aqui: https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=laser%20range%20finder%20calibration&highlight=true&returnFacets=ALL&returnType=SEARCH&ranges=2010_2018_Year
-
-Clustering of papers:
-
-There are some papers which use planar structures. In 
-In \cite{Kim2013}, a method for the extrinsic calibration is proposed that uses the normal verctor of two reference planes as metric for estimating the transformation. In blab
-
-% Optimizações / Grid search / analytica
-
-
-
-
-
-%In this paper, we present an algorithm for the extrinsic calibration method of rotating laser range finder (LRF). LRF is rotated about one axis using a motor therefore it is required to find the transformation between the motor and LRF to register scanned datum into one coordinate. We use calibration structure consisted of two planes to recover the transformation. Initial value of the transformation is set by hand and exhaustive search on the solution space is done. The fitness of the solution is evaluated using normal vector of the plane on the scene.
-
-
-Pontos essenciais:
-\begin{itemize}
-    \item A calibração normalmente não é feita, por se conhecer a posição do laser por medições mecânicas;
-    \item para protótipos e desenvolvimento, por vezes a posição do Lidar não é 
-\end{itemize}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Proposed Approach}\label{sec:proposed_approach}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%The approach is based on an optimization procedure which computes the transformation that minimizes the distance between selected points of the accumulated point cloud and their corresponding planes.
-A alternative method, the Planar Based Calibration, was developed in this work to calibrate the laser scanner in this system. One of the key differences to the previous method (in \cref{section:radlocc-method}) is that the calibration is done only using the laser range data, and the calibration from the PTU to the laser scanner is directly found (the transformation marked in blue in \cref{figure:geometric-transformation-graph}), so no camera is required. This method supposes that, in a good calibration, the deviation of a point set is minimal. In other words, in a point set representing a planar surface, the deviation from the points to the planar surface should be the lowest, if the extrinsic calibration is correct.
+The working principle of this method relies on the following assunption: in a good calibration, the deviation of a measured point set w.r.t. to the real scene geometry should be minimal. This paper focuses on planar geometries because of two reasons:  they are easily segmented from the full point cloud; and it is straight-forward to compute a similarity metric between the point cloud and the expected planar geometry. In other words, in a point set representing a planar surface, the deviation from the points to the planar surface should be the lowest, if the calibration is correct.
 
-This method is, therefore, an optimization problem. For each extrinsic calibration transformation $\mathcal{T}$, corresponds a point cloud $\mathcal{P}$, following the method shown on \cref{section:point-registration}. This point cloud is evaluated by a cost function, which determines quantitatively how good each generated point cloud is. Finally, an optimizer will find the transformation $T$ that minimizes the loss function. Each one of these steps is described in detail next.
+This method can then be formulated as an optimization problem: for each extrinsic calibration transformation $\mathbf{T}$, corresponds a point cloud $\mathcal{P}$. This point cloud is evaluated by a cost function, which determines quantitatively how good each generated point cloud is. Finally, an optimizer will find the transformation $T$ that minimizes the loss function. Therefore, this method can be defined as:
+%
+\begin{equation}
+    \mathbf{T} = \underset{T}{\mathrm{argmin}} \left\{ \mathrm{\sigma}(\textbf{P}) \right\},
+\end{equation}
+%
+\noindent where % definir as variaveis
 
-\subsubsection{Segmentation}
+
+
+Falar dos vários componentes:
+
+\begin{itemize}
+    \item Parametros
+    \item Cost Fn
+    \item Optimizer
+\end{itemize}
+
+\subsection{Paramerization of the Transformation}
+
+The parameters in this calibration are six values that define a geometric transformation in space, which is, in the end, cast back to the transformation matrix $\bm{T}$. This transformation is decomposed into two components, a translation and a rotation. The translation can be represented as the translation vector $\mathbf{t} = \left[t_x, t_y, t_z\right]$, and the rotation is be represented as a $3 \times 3$ rotation matrix $\bm{R}$. Since a rotation matrix has only $3 \times 3 = 9$ elements but only 3 degrees of freedom, another parameterization has to be used to represent a rotation. Popular parameterization for rotations are euler angles, quaternions and axis/angle. However, not all representations are suitable for an optimization. In fact, in~\cite{hornegger99} the term fair parameterization was introduced: a parameterization is called fair, if it does not introduce more numerical sensitivity than the one inherent to the problem itself. Therefore, fair parameterizations are required for optimizations, as they increases the chances for convergence. For example, euler angles, which are probably the most used angle parameterizations, are not suitable~\cite{schmidt01}, because they do not yield smooth movements. Each rotation is non-unique and, most notably, there are singularities, so-called \textit{gimbal-lock} singularities, where one degree of freedom is lost~\cite{schmidt01}. Also, quaternions are not suitable for optimizations, because quaternions have $4$ components which are constrained to an unitary length. Despite being a fair parameterization, quaternions introduce some complexity in the algorithm to handle this constraint, so they are not usually used for optimizations~\cite{schmidt01}.
+
+The axis/angle parameterization is the most widely used to represent a rotation in optimization procedures, as it is a fair parameterization and has only three components. Any rotation can be represented as a rotation around an axis $a$, by an angle $\theta$. Since $\bm{a}$ only represents the direction of the rotation (hence only has 2 degrees of freedom), it can be combined with the angle $\theta$ into a single rotation vector $\bm{\omega} = \left[\omega_1, \omega_2, \omega_3\right]$, as follows:
+
+\begin{equation}
+    \label{eqn:axis-angle}
+    \begin{aligned}
+        \theta & = |\bm{\omega}| \\
+        \bm{a} & = \frac{\bm{\omega}}{|\bm{\omega}|}
+    \end{aligned}
+\end{equation}
+
+Computing the rotation matrix from $\omega$ is done using the Rodrigues' formula~\cite{schmidt01}:
+%
+\begin{equation}
+    \textbf{R} = \bm{I} + \frac{\sin \theta}{\theta} \bm{\Omega} + \frac{1 - \cos \theta}{\theta^2} \bm{\Omega},
+\end{equation}
+%
+\noindent
+where I is the $3\times3$ identity matrix, and $\bm{\Omega}$ is given by:
+%
+\begin{equation}
+    \bm{\Omega} = \left[
+        \begin{array}{ccc}
+            0  & -\omega_3 & \omega_2 \\
+            \omega_3 & 0   & -\omega_1 \\
+            -\omega_2 & \omega_1 & 0 \\
+        \end{array}
+    \right].
+\end{equation}
+
+
+In conclusion, the parameter vector to be optimized will have six values: three representing the translation $\bm{t}$ and the rotation vector $\bm{\omega}$ represented in the axis/angle representation. So, the parameter vector $\bm{x}$ is defined as:
+
+\begin{equation}
+    \bm{x} = \left[t_1, t_2, t_3, \omega_1, \omega_2, \omega_3\right].
+\end{equation}
+
+%TODO: Colocar dentro 
+\subsection{Segmentation}
 
 This calibration method uses an acquisition as its dataset, which is a significant advantage, since no calibrations patterns and no special apparatus is required, like chessboards or other markers. Also, a point cloud has to be generated using a estimation of the calibration transformation. This point cloud does not have to be geometrically accurate but the geometry should be perceivable for the plane segmentation, which is done manually prior to the calibration. In this work, the software CloudCompare was used to segment the point cloud into multiple planes, and the data was saved as a scalar index in each point. An example of a segmentation can be seen in \cref{figure:cluster-segmentation-1}, where each cluster is represented with a different color.
 
@@ -165,12 +168,12 @@ During the optimization, this segmentation serves as a blueprint for all the seg
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.8\textwidth]{cluster-segmentation-1}
+%    \includegraphics[width=.8\textwidth]{cluster-segmentation-1}
     \caption{Example of a plane segmentation, where each color represents a cluster.}
     \label{figure:cluster-segmentation-1}
 \end{figure}
 
-\subsubsection{Cost Function}
+\subsection{Cost Function}
 \label{section:calibration-cost-function}
 
 The cost function is a measure used in optimization that compares the result of a model with its expected result, and returns a value that describes the dissimilarity between the two. More concretely, in this calibration the cost function has two steps: the cost is computed for each cluster and then the cost of all the clusters is combined into a single value, which is the final cost of the point cloud.
@@ -198,95 +201,39 @@ Next, the scores of the clusters are combined into a scalar value, which is the 
     RMS = \sqrt{\sum_{i}^{N}{\textrm{loss}_i^2}}
 \end{equation}
 
-\subsubsection{Paramerization}
-
-The parameters in this calibration are six values that define a geometric transformation in space, which is, in the end, a transformation matrix $T$ (\cref{eqn:transformation-matrix}). This transformation can be decomposed into two components, a translation and a rotation. The translation can be represented as the vector $t = (t_x, t_y, t_z)$, and the rotation can be represented as a $3 \times 3$ rotation matrix $R$. Since a rotation matrix has only $3 \times 3 = 9$ elements but only 3 degrees of freedom, another parameterization has to be used to represent a rotation. Popular parameterization for rotations are euler angles, quaternions and axis/angle representation. 
-
-\begin{equation}
-    \label{eqn:transformation-matrix}
-    T = \left[
-        \begin{array}{cccc}
-            r_{11} & r_{12} & r_{13} & t_x \\
-            r_{21} & r_{22} & r_{23} & t_y \\
-            r_{31} & r_{32} & r_{33} & t_z \\
-            0      & 0      & 0      & 1   
-        \end{array}
-    \right]
-\end{equation}
-
-However, not all representations are suitable for an optimization. In fact, in~\cite{hornegger99} the term fair parameterization was introduced: a parameterization is called fair, if it does not introduce more numerical sensitivity than the one inherent to the problem itself. Therefore, fair parameterization are a requirement for optimizations, as it increases the chances of convergence. For example, euler angles, which are probably the most used angle parameterization, are not suitable for optimizations~\cite{schmidt01}, because they do not yield smooth movements, each rotation is non-unique and, most notably, there are singularities, so-called \textit{gimbal-lock} singularities, where one degree of freedom is lost~\cite{schmidt01}. Also, quaternions are not suitable for optimizations, because quaternions have $4$ components which are constrained to an unitary length. Despite being a fair parameterization, quaternions introduce some complexity in the algorithm to handle this constrain, so they are not usually used for optimizations~\cite{schmidt01}.
-
-The axis/angle parameterization is the most widely used to represent a rotation in an optimization, as it is a fair parameterization and has only three components. Any rotation can be represented as a rotation around an axis $a$, by an angle $\theta$. Since $a$ only represent the direction of the rotation (hence only has 2 degrees of freedom), it can be combined with the angle $\theta$ into a single vector $\omega = \left(\omega_1, \omega_2, \omega_3\right)$, as in \cref{eqn:axis-angle}.
-
-\begin{equation}
-    \label{eqn:axis-angle}
-    \begin{aligned}
-        \theta & = |\omega| \\
-        a & = \frac{\omega}{|\omega|}
-    \end{aligned}
-\end{equation}
-
-Computing the rotation matrix from $\omega$ is done using the Rodrigues' formula~(\cref{eqn:rogriguez-1,eqn:rogriguez-2})~\cite{schmidt01}:
-
-\begin{align}
-    \label{eqn:rogriguez-1}
-    R = I + \frac{\sin \theta}{\theta} [\omega] + \frac{1 - \cos \theta}{\theta^2} [w] \\
-    \label{eqn:rogriguez-2}
-    [w] = \left[
-        \begin{array}{ccc}
-            0  & -\omega_3 & \omega_2 \\
-            \omega_3 & 0   & -\omega_1 \\
-            -\omega_2 & \omega_1 & 0 \\
-        \end{array}
-    \right],
-\end{align}
-
-\noindent
-where I is the $3\times3$ identity matrix, $\theta$ is the angle and $\omega_1$, $\omega_2$ and $\omega_3$ are the components of $\omega$.
-
-In conclusion, the parameter vector will have 6 values: 3 representing the translation ($t_1, t_2, t_3$) and 3 representing the rotation in the axis/angle representation ($r_1, r_2, r_3$). So, the parameter vector is shown in \cref{eqn:parameter-vector}.
-
-\begin{equation}
-    \label{eqn:parameter-vector}
-    P = \{t_1, t_2, t_3, r_1, r_2, r_3\}
-\end{equation}
-
 \subsection{First Guess}
 
 This optimization was quite robust to the initial parameters, so the first guess was always a null translation and the rotation was done doing a visual inspection of the laser scanner, using angles multiples of \SI{90}{\degree}.
 
-\subsubsection{Optimizer}
+\subsection{Optimizer}
 
 The optimization is performed using the Powell's method, described in \cite{powell64}. This method finds a local minimum of a multi-dimensional unconstrained function, and does not require the gradient of this function (is unknown in this problem), which fits this particular optimization. This method is implemented in the python scientific library SciPy\footnote{See the Scipy reference in \url{https://docs.scipy.org/doc/scipy/reference/optimize.minimize-powell.html}.}.
 
+
+% maybe describe the actual equipament used
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}\label{sec:results}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{itemize}
+    \item Figura com análise qualitativa (before / after)
+    \item Quantitativa (dispersão e ortogonalidade)
+\end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions and Future Work}\label{sec:conclusions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{itemize}
+    \item Optimizador lento
+\end{itemize}
 
 
 
-{\small
+
 \bibliographystyle{IEEEtran}
 \bibliography{references/refs}
-}
 
-%\begin{thebibliography}{00}
-%\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
-%\bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
-%\bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
-%\bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
-%\bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
-%\bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
-%\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
-%\end{thebibliography}
-\vspace{12pt}
-\color{red}
-IEEE conference templates contain guidance text for composing and formatting conference papers. Please ensure that all template text is removed from your conference paper prior to submission to the conference. Failure to remove the template text from your paper may result in your paper not being published.
 
 \end{document}
