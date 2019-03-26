@@ -26,24 +26,24 @@
     using Planar Features
 }
 
-% \author{\IEEEauthorblockN{Bernardo Lourenço}
-% \IEEEauthorblockA{\textit{Departamento de Engenharia Mecânica} \\
-% \textit{Universidade de Aveiro}\\
-% Aveiro, Portugal \\
-% bernardo.lourenco@ua.pt}
-% \and
-% \IEEEauthorblockN{Paulo Dias}
-% \IEEEauthorblockA{\textit{IEETA} \\
-% \textit{Universidade de Aveiro}\\
-% Aveiro, Portugal \\
-% paulo.dias@ua.pt}
-% \and
-% \IEEEauthorblockN{Miguel Riem Oliveira}
-% \IEEEauthorblockA{\textit{Departamento de Engenharia Mecânica} \\
-% \textit{Universidade de Aveiro}\\
-% Aveiro, Portugal \\
-% mriem@ua.pt}
-% }
+\author{\IEEEauthorblockN{Bernardo Lourenço}
+\IEEEauthorblockA{\textit{Departamento de Engenharia Mecânica} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+bernardo.lourenco@ua.pt}
+\and
+\IEEEauthorblockN{Paulo Dias}
+\IEEEauthorblockA{\textit{IEETA} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+paulo.dias@ua.pt}
+\and
+\IEEEauthorblockN{Miguel Riem Oliveira}
+\IEEEauthorblockA{\textit{Departamento de Engenharia Mecânica} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+mriem@ua.pt}
+}
 
 \maketitle
 
@@ -58,7 +58,7 @@ LRF, calibration, reconstruction, point cloud, optimization
 
 \section{Introduction}\label{section:introduction}
 
-Laser Range Finder, or LRFs, is one of the most important sensors in the field of robotics, employed in applications such as Simultaneous Localization and Mapping~\cite{wang14,eyice18} and 3D reconstruction~\cite{saito10}. Their use is increasing due to several factors, such as decreasing costs, new research and development, and a fundamental role in emerging technologies such as autonomous driving.
+Laser Range Finder, or LRFs, is one of the most important sensors in the field of robotics, employed in applications such as Simultaneous Localization and Mapping~\cite{cadena16} and 3D reconstruction~\cite{saito10}. Their use is increasing due to several factors, such as decreasing costs, new research and development, and a fundamental role in emerging technologies such as autonomous driving.
 
 In this paper, a 2D-LRF is used in a 3D reconstruction system, to produce high-detail and accurate models of real scenes. Using a 2D-LRF is this system has the advantage of being several times cheaper than commercial 3D laser scanners~\cite{dias06}. The common solution involves the integration of the LRF on a turntable~\cite{maurelli09} or a Pan-tilt unit, or PTU~\cite{klimentjew09}, to enable a full 3D reconstruction. One of the challenges of this approach is the calibration of the position of the LRF, relative to the coordinate frame of a dynamic kinematic chain, such as a PTU. This process is known as the LRF-PTU extrinsic calibration.
 
@@ -73,13 +73,13 @@ This calibration is utterly necessary because any error introduces a shift on th
 
 Typically, a possible solution to do this calibration relies on a study of the geometry of such a system, using a measuring instrument, for example, a tactile Coordinate Measuring Machine. However, this approach has several disadvantages: it is time-consuming, the instruments required are expensive and generally not easily available.
 
-Therefore, reliable and automatic methods for the LRF extrinsic calibration are required. In this field, there are two main approaches, depending on the sensor which the LRF is calibrated relative to. The first method and the most studied is the calibration of the LRF relative to a camera~\cite{chen16,kassir10,zhang04}, or cameras~\cite{haeselich12}. In this method, the static transformation between these two sensors is determined and relies on a correspondence between visual features captured by the camera and geometric features captured by the LRF. This features might be markers placed on the field of view of both sensors, such as a chessboard, in the case of \cite{kassir10}. However, these methods have some disadvantages in the case of LRF mounted on robotic arms: first, they require the inclusion of a camera in the system; secondly, the calibration of the camera has to be performed; and lastly, the error of both calibrations is combined during the reconstruction, which increases the inaccuracies of the final reconstruction. 
+Therefore, reliable and automatic methods for the LRF extrinsic calibration are required. In this field, there are two main approaches, depending on the sensor which the LRF is calibrated relative to. The first method and the most studied is the calibration of the LRF relative to a camera~\cite{chen16,vasconcelos12}, or cameras~\cite{haeselich12}. In this method, the static transformation between these two sensors is determined and relies on a correspondence between visual features captured by the camera and geometric features captured by the LRF. This features might be markers placed on the field of view of both sensors, such as a chessboard, in the case of \cite{kassir10}. However, these methods have some disadvantages in the case of LRF mounted on robotic arms: first, they require the inclusion of a camera in the system; secondly, the calibration of the camera has to be performed; and lastly, the error of both calibrations is combined during the reconstruction, which increases the inaccuracies of the final reconstruction. 
 
 Another approach is to calibrate the 2D-LRF directly against a moving platform~\cite{zeng18}. Most of these methods rely on the comparison between the structure of the reconstructed points with an object with a known 3D geometry, such as a plane, a ball~\cite{pereira16} or a cone~\cite{almeida12}. In~\cite{kim13}, a marker formed by two perpendicular planes is used, and their points are segmented from the reconstructed point cloud. Then, the relation between the normals of these planes is used as the objective function for the calibration. However, this method presents some limitations: first, ensuring that two planes are perpendicular with a small error can be very hard (it requires a well-built marker); second, it is not straight-forward how to increase the number of planes; finally, by using a small marker, only a small portion of the space is occupied, which means that only a portion of the sensors' full field of view is used, which may lead to a sub-optimal result.
 
 \section{Problem Formulation}\label{section:problem-formulation}
 
-The 2D-LRF is a sensor that outputs several laser scans. Each laser scan is a set of range measurements taken along several directions all coincident with a plane: the scanning plane. That is in fact why this equipment has a 2D nature. Thus, for each scan, a 2D slice of the scene is measured. Since the LRF is mounted on top of an actuated kinematic chain (the PTU), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. 
+The 2D-LRF is a sensor that outputs several laser scans. Each laser scan is a set of range measurements taken sequentially along several directions all coincident with a plane: the scanning plane. That is in fact why this equipment has a 2D nature. Thus, for each scan, a 2D slice of the scene is measured. Since the LRF is mounted on top of an actuated kinematic chain (the PTU), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. It is important to consider that the scan is not acquired instantaneously. However, if the speed of the LRF is low, its effects are negligible.
 
 The process of accumulation is, in essence, based on the concatenation of 3D points from multiple scans. However, the grouping of these points requires that the points of each laser scan are transformed into a common, static, reference frame, the map frame. In order to achieve it, one must apply a geometric transformation to each 3D point $\mathbf{q}^{(i)}$ measured in scan $i$, represented in the LRF's local coordinate system $l$. The transformed point $\mathbf{p}^{(i)}$, defined in the map reference frame, is determined by:
 %
@@ -157,7 +157,7 @@ The cost function is a function used in optimization procedures to measure the d
 
 As an initial step, the segmentation of the point cloud is performed. The segmentation is a procedure that divides the point cloud $\mathcal{P}$ into multiple clusters $\mathcal{C}_i$, each one correspondent to different planes on the scene. This segmentation is done prior to the calibration procedure, using the point cloud reconstructed using an initial estimate. The initial estimate was determined by visual inspection of the system.
 
-The segmentation was performed manually because it was not relevant for the scope of this work to perform it automatically. Also, it was a quick and one-time process, but it was necessary to ensure that the segmentation was well performed. In the future, automatic segmentation procedures could be studied to streamline the method.
+The segmentation was performed manually, using the software \textit{CloudCompare}\footnote{CloudCompare (\url{https://www.danielgm.net/cc/}) is a 3D point cloud and mesh processing software.}, because it was not relevant for the scope of this work to perform it automatically. Also, it was a quick and one-time process, but it was necessary to ensure that the segmentation was well performed. In the future, automatic segmentation procedures could be studied to streamline the method.
 
 During the optimization, the segmentation is loaded into memory as a lookup table. At each iteration, the reconstructed point cloud is segmented the same way, via this lookup table.
 
@@ -282,7 +282,7 @@ This method was performed for 3 manually segmented planes, such as the ones seen
 
 This paper presents a calibration procedure to determine the extrinsic transformation of 2D-LRF and PTU. The accuracy of this transformation is critical for multiple applications, of which the most noticeable are 3D reconstruction systems. The incorrect calibration of these systems results in artifacts and deformations on the final reconstructions, which invalidates any successive work in these point clouds. The proposed method is based on the measurement of the deformations of reconstructed planar surfaces, and through an optimization procedure, these deformations are minimized. The method was proved to be effective, through a visual inspection of the resulting point cloud and through statistical evaluation of the reconstructed geometries.
 
-Further work can be done in order to improve or validate further this algorithm, such as: a study of a automatic segmentation procedure; the determination of the Jacobian of the cost function, in order to reduce the iteration time of the optimization, by enabling new optimization methods, such as the gradient descent; the validation of this method with data using different 2D-LRF and different dynamic kinematic chains, such as a robotic arm; and the comparison of the point cloud generated with this reconstruction method with point clouds generated with high-end commercial 3D scanners, such as the \textit{FARO Focus 3D}.
+Further work can be done in order to improve or validate further this algorithm, such as: a study of a automatic segmentation procedure; the determination of the Jacobian of the cost function, in order to reduce the iteration time of the optimization, by enabling new optimization methods, such as the gradient descent; the validation of this method with data using different 2D-LRF and different dynamic kinematic chains, such as a robotic arm; the comparison of the point cloud generated with this reconstruction method with point clouds generated with high-end commercial 3D scanners, such as the \textit{FARO Focus 3D}; and study the impact of the calibration environment (for example, the number and pose of the planes and size of the room) in the calibration accuracy.
 
 
 \bibliographystyle{IEEEtran}
