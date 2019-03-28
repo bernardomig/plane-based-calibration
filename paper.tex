@@ -10,13 +10,11 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{siunitx}
-\usepackage{hyperref}
-\usepackage[noabbrev, capitalize]{cleveref}
+\usepackage{url}
 \usepackage{bm}
 \usepackage{tabu}
 \usepackage{booktabs}
 \usepackage{subfig}
-\usepackage{bookmark}
 \usepackage{dsfont}
 
 \begin{document}
@@ -45,7 +43,12 @@ Aveiro, Portugal \\
 mriem@ua.pt}
 }
 
+\IEEEoverridecommandlockouts
+\IEEEpubid{\makebox[\columnwidth]{978-1-7281-3558-8/19/\$31.00~\copyright2019 IEEE \hfill} \hspace{\columnsep}\makebox[\columnwidth]{ }}
+
 \maketitle
+
+\IEEEpubidadjcol    
 
 \begin{abstract}
     2D Laser Range Finders, or 2D-LRFs, are essential sensors in the field of robotics, providing accurate range measurements with high angular resolution. These sensors can be assembled on top of systems which, by granting additional degrees of freedom to the movement of the LRF, enable the 3D reconstruction of a scene. The reconstruction procedure consists of the concatenation of each scan in a single point cloud representation. To do so, the extrinsic transformation between the LRF and the motorized system, in this case, a Pan-tilt unit, must be known with high accuracy, otherwise, the quality of the 3D reconstructed point clouds is insufficient.
@@ -62,7 +65,7 @@ Laser Range Finder, or LRFs, is one of the most important sensors in the field o
 
 In this paper, a 2D-LRF is used in a 3D reconstruction system, to produce high-detail and accurate models of real scenes. Using a 2D-LRF is this system has the advantage of being several times cheaper than commercial 3D laser scanners~\cite{dias06}. The common solution involves the integration of the LRF on a turntable~\cite{maurelli09} or a Pan-tilt unit, or PTU~\cite{klimentjew09}, to enable a full 3D reconstruction. One of the challenges of this approach is the calibration of the position of the LRF, relative to the coordinate frame of a dynamic kinematic chain, such as a PTU. This process is known as the LRF-PTU extrinsic calibration.
 
-This calibration is utterly necessary because any error introduces a shift on the position of each point, which in turn can be seen as deformations on the point cloud resulting from the acquisition. Such deformation can be seen in \cref{fig:deformed-pointcloud}, which is shown as multiple misalign planes. These deformations have a significant impact on subsequent point cloud processing methods, that rely on the accurate representation of the 3D environments, i.e. registration (for example, ICP), segmentation and feature extraction algorithms. 
+This calibration is utterly necessary because any error introduces a shift on the position of each point, which in turn can be seen as deformations on the point cloud resulting from the acquisition. Such deformation can be seen in Figure \ref{fig:deformed-pointcloud}, which is shown as multiple misalign planes. These deformations have a significant impact on subsequent point cloud processing methods, that rely on the accurate representation of the 3D environments, i.e. registration (for example, ICP), segmentation and feature extraction algorithms. 
 
 \begin{figure}[h]
     \centering
@@ -203,7 +206,7 @@ The optimization algorithm chosen was Powell's method, described in \cite{powell
 
 In this section, the proposed method for the calibration was evaluated using acquired data from a real scene. 
 
-The hardware infrastructure used in this work to acquire the data was the 3D scanner \textit{lemonbot}, show in \cref{figure:lemonbot}. The principal components of this 3D scanner are the PTU \textit{FLIR PTU-D46} and the 2D laser scanner \textit{Hokuyo UTM30LX}\footnote{The 3D scanner, as seen in the \cref{figure:lemonbot}, has two laser scanners: the \textit{Hokuyo UTM30LX} and the \textit{SICK LMS100}. In this work, only the first was used.}. The LRF was mounted on the PTU, to have the scan plane in the vertical direction. The laser scanner can cover \SI{270}{\degree} with an angular resolution of \SI{0.25}{\degree}. The PTU has an angular resolution of \SI{0.0032}{\degree}, so the error in the transformation $^{m}\mathbf{T}_{e}$ (see \cref{equation:point-reconstruction}) is negligible. This 3D scanner was programmed using the \textit{ROS} framework, which handles the hardware drivers, the transformation graph and the recording of the scanning data.
+The hardware infrastructure used in this work to acquire the data was the 3D scanner \textit{lemonbot}, shown in Figure \ref{figure:lemonbot}. The principal components of this 3D scanner are the PTU \textit{FLIR PTU-D46} and the 2D laser scanner \textit{Hokuyo UTM30LX}\footnote{The 3D scanner, as seen in the Figure \ref{figure:lemonbot}, has two laser scanners: the \textit{Hokuyo UTM30LX} and the \textit{SICK LMS100}. In this work, only the first was used.}. The LRF was mounted on the PTU, to have the scan plane in the vertical direction. The laser scanner can cover \SI{270}{\degree} with an angular resolution of \SI{0.25}{\degree}. The PTU has an angular resolution of \SI{0.0032}{\degree}, so the error in the transformation $^{m}\mathbf{T}_{e}$ (see Equation \ref{equation:point-reconstruction}) is negligible. This 3D scanner was programmed using the \textit{ROS} framework, which handles the hardware drivers, the transformation graph and the recording of the scanning data.
 
 \begin{figure}[h]
     \centering
@@ -214,7 +217,7 @@ The hardware infrastructure used in this work to acquire the data was the 3D sca
 
 For the verification, a dataset was acquired from a single room, which consists of 3 acquisitions\footnote{One acquisition corresponds to a set of laser scans taken from a particular position in the scene. Each acquisition is processed and results in a point cloud.}. The acquisitions were performed in different positions in the room. The room was not cluttered and the ceiling, walls, and floor are all perpendicular and known to be planar surfaces. This was ensured in order to minimize segmentation and calibration errors.
 
-The optimization procedure was successful minimizing the objective function in every dataset, as seen in \cref{table:iteration-results}. The final results in a qualitative improvement in comparison to the uncalibrated point cloud, as shown in \cref{figure:visual-comparison}. These examples show the most common defects shown in poorly calibrated reconstructions. In the first example, the roof surface appears as multiple unaligned surfaces. This effect can be also seen in a wall, in the third example, which appears in duplication. The second example shows a deformation, which evidently deformed the corner structure in the point cloud. These deformations found in the uncalibrated point clouds are almost imperceptible in the calibrated point cloud.
+The optimization procedure was successful minimizing the objective function in every dataset, as seen in Table \ref{table:iteration-results}. The final results in a qualitative improvement in comparison to the uncalibrated point cloud, as shown in Figure \ref{figure:visual-comparison}. These examples show the most common defects shown in poorly calibrated reconstructions. In the first example, the roof surface appears as multiple unaligned surfaces. This effect can be also seen in a wall, in the third example, which appears in duplication. The second example shows a deformation, which evidently deformed the corner structure in the point cloud. These deformations found in the uncalibrated point clouds are almost imperceptible in the calibrated point cloud.
 
 Practical experience shows that this calibration is resilient to the initial parameters. In this calibration, the initial parameters were roughly determined by visual inspection of the 3D scanner. 
 
@@ -252,7 +255,7 @@ Despite the good qualitative result, a further quantitative analysis was perform
     \item The statistic deviation of the distances was calculated.
 \end{itemize}
 
-This method was performed for 3 manually segmented planes, such as the ones seen in \cref{figure:cluster-segmentation-1}, and the segments can be seen in \cref{table:quantitative-results}. As seen the statistical deviation is, in fact, smaller in the calibrated point cloud. As an alternative view, in \cref{figure:deviation-histogram}, the histogram, and distribution of the signed deviation are shown for both the point clouds. As shown, the deviations of the calibrated point cloud are less scattered than the deviations of the uncalibrated point cloud. These results indicate that this calibration method, in fact, improves the results. 
+This method was performed for 3 manually segmented planes, such as the ones seen in Figure \ref{figure:cluster-segmentation-1} and the segments can be seen in Table \ref{table:quantitative-results}. As seen the statistical deviation is, in fact, smaller in the calibrated point cloud. As an alternative view, in Figure \ref{figure:deviation-histogram}, the histogram, and distribution of the signed deviation are shown for both the point clouds. As shown, the deviations of the calibrated point cloud are less scattered than the deviations of the uncalibrated point cloud. These results indicate that this calibration method, in fact, improves the results. 
 
 \begin{table}
     \caption{Comparison between the standard deviation and mean of the distances of the points to the plane for both the calibrated and uncalibrated point clouds.}
@@ -282,7 +285,7 @@ This method was performed for 3 manually segmented planes, such as the ones seen
 
 This paper presents a calibration procedure to determine the extrinsic transformation of 2D-LRF and PTU. The accuracy of this transformation is critical for multiple applications, of which the most noticeable are 3D reconstruction systems. The incorrect calibration of these systems results in artifacts and deformations on the final reconstructions, which invalidates any successive work in these point clouds. The proposed method is based on the measurement of the deformations of reconstructed planar surfaces, and through an optimization procedure, these deformations are minimized. The method was proved to be effective, through a visual inspection of the resulting point cloud and through statistical evaluation of the reconstructed geometries.
 
-Further work can be done in order to improve or validate further this algorithm, such as: a study of a automatic segmentation procedure; the determination of the Jacobian of the cost function, in order to reduce the iteration time of the optimization, by enabling new optimization methods, such as the gradient descent; the validation of this method with data using different 2D-LRF and different dynamic kinematic chains, such as a robotic arm; the comparison of the point cloud generated with this reconstruction method with point clouds generated with high-end commercial 3D scanners, such as the \textit{FARO Focus 3D}; and study the impact of the calibration environment (for example, the number and pose of the planes and size of the room) in the calibration accuracy.
+Future work can be done in order to improve or validate further this algorithm, such as a study of an automatic segmentation procedure; the determination of the Jacobian of the cost function, in order to reduce the iteration time of the optimization, by enabling new optimization methods, such as the gradient descent; the validation of this method with data using different 2D-LRF and different dynamic kinematic chains, such as a robotic arm; the comparison of the point cloud generated with this reconstruction method with point clouds generated with high-end commercial 3D scanners, such as the \textit{FARO Focus 3D}; and study the impact of the calibration environment (for example, the number and pose of the planes and size of the room) in the calibration accuracy.
 
 
 \bibliographystyle{IEEEtran}
