@@ -24,31 +24,25 @@
     using Planar Features
 }
 
-\author{\IEEEauthorblockN{Bernardo Lourenço}
-\IEEEauthorblockA{\textit{Departamento de Engenharia Mecânica} \\
-\textit{Universidade de Aveiro}\\
-Aveiro, Portugal \\
-bernardo.lourenco@ua.pt}
-\and
-\IEEEauthorblockN{Paulo Dias}
-\IEEEauthorblockA{\textit{IEETA} \\
-\textit{Universidade de Aveiro}\\
-Aveiro, Portugal \\
-paulo.dias@ua.pt}
-\and
-\IEEEauthorblockN{Miguel Riem Oliveira}
-\IEEEauthorblockA{\textit{Departamento de Engenharia Mecânica} \\
-\textit{Universidade de Aveiro}\\
-Aveiro, Portugal \\
-mriem@ua.pt}
+\DeclareRobustCommand*{\IEEEauthorrefmark}[1]{%
+  \raisebox{0pt}[0pt][0pt]{\textsuperscript{\footnotesize #1}}%
 }
+
+\author{
+    \IEEEauthorblockN{
+        Bernardo Lourenço\IEEEauthorrefmark{1},
+        Paulo Oliveira\IEEEauthorrefmark{2,3}
+        and Miguel Oliveira\IEEEauthorrefmark{1,3,4,5}}
+    \IEEEauthorblockA{\IEEEauthorrefmark{1}Departamento de Engenharia Mecânica, Universidade de Aveiro, Portugal}
+    \IEEEauthorblockA{\IEEEauthorrefmark{2}Departamento de Electrónica, Telecomunicações e Informática, Universidade de Aveiro, Portugal}
+    \IEEEauthorblockA{\IEEEauthorrefmark{3}Institute of Electronics and Informatics Engineering of Aveiro, Universidade de Aveiro, Portugal}
+    \IEEEauthorblockA{\IEEEauthorrefmark{4}Centro de Tecnologia Mecânica e Automação (TEMA), Universidade de Aveiro, Portugal}
+    \IEEEauthorblockA{\IEEEauthorrefmark{5}Instituto de Engenharia de Sistemas e Computadores, Tecnologia e Ciência, Portugal}}
 
 \IEEEoverridecommandlockouts
 \IEEEpubid{\makebox[\columnwidth]{978-1-7281-3558-8/19/\$31.00~\copyright2019 IEEE \hfill} \hspace{\columnsep}\makebox[\columnwidth]{ }}
 
 \maketitle
-
-\IEEEpubidadjcol    
 
 \begin{abstract}
     2D Laser Range Finders, or 2D-LRFs, are essential sensors in the field of robotics, providing accurate range measurements with high angular resolution. These sensors can be assembled on top of systems which, by granting additional degrees of freedom to the movement of the LRF, enable the 3D reconstruction of a scene. The reconstruction procedure consists of the concatenation of each scan in a single point cloud representation. To do so, the extrinsic transformation between the LRF and the motorized system, in this case, a Pan-tilt unit, must be known with high accuracy, otherwise, the quality of the 3D reconstructed point clouds is insufficient.
@@ -82,7 +76,7 @@ Another approach is to calibrate the 2D-LRF directly against a moving platform~\
 
 \section{Problem Formulation}\label{section:problem-formulation}
 
-The 2D-LRF is a sensor that outputs several laser scans. Each laser scan is a set of range measurements taken sequentially along several directions all coincident with a plane: the scanning plane. That is in fact why this equipment has a 2D nature. Thus, for each scan, a 2D slice of the scene is measured. Since the LRF is mounted on top of an actuated kinematic chain (the PTU), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. It is important to consider that the scan is not acquired instantaneously. However, if the speed of the LRF is low, its effects are negligible.
+The 2D-LRF is a sensor that outputs several laser scans. Each laser scan is a set of range measurements taken sequentially along several directions, all coincident with a plane: the scanning plane. That is in fact why this equipment has a 2D nature. Thus, for each scan, a 2D slice of the scene is measured. Since the LRF is mounted on top of an actuated kinematic chain (the PTU), the movement of this chain positions the LRF in different poses in the 3D space. Through the accumulation of the several laser scans, a dense point cloud of the scene is produced. Note that, theoretically, the movement of the PTU may influence the measurements of the single scan. However, because the frequency of scanning acquisition is high, and the velocity of the joints of the PTU is low, this effect was not considered in this work.
 
 The process of accumulation is, in essence, based on the concatenation of 3D points from multiple scans. However, the grouping of these points requires that the points of each laser scan are transformed into a common, static, reference frame, the map frame. In order to achieve it, one must apply a geometric transformation to each 3D point $\mathbf{q}^{(i)}$ measured in scan $i$, represented in the LRF's local coordinate system $l$. The transformed point $\mathbf{p}^{(i)}$, defined in the map reference frame, is determined by:
 %
